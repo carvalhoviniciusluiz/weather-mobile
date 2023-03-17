@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { WeatherContext, WeatherContextProps } from '../contexts';
+import { WeatherContext, StateProps } from '../contexts';
 
 export function WeatherProvider({ children }: any) {
-  const [state, setState] = useState({} as WeatherContextProps);
+  const [state, setState] = useState({} as StateProps);
 
   return (
     <WeatherContext.Provider value={{ state, setState }}>
