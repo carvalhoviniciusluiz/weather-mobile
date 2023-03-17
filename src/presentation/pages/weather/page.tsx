@@ -30,7 +30,7 @@ export default function Page(props: PageProps) {
   }
 
   const handleFetch = useCallback(async () => {
-    const isEmpty = !!!value;
+    const isEmpty = !!!value.message;
     if(isEmpty) {
       return
     }
@@ -38,9 +38,10 @@ export default function Page(props: PageProps) {
     try {
       const city = await getCityByName.run({ city: value.message });
       if(city) {
-        const { lat, lon } = city;
-        const coords = await getCityByCoords.run({ lon, lat });
-        const weather = await getWeather.run({ lon, lat });
+        const { country, ...geoCoords } = city;
+        const coordsPromise = getCityByCoords.run(geoCoords);
+        const weatherPromise = getWeather.run(geoCoords);
+        const [coords, weather] = await Promise.all([coordsPromise, weatherPromise]);
 
         setState({ city, coords, weather });
       }
@@ -49,6 +50,10 @@ export default function Page(props: PageProps) {
     }
     setValue(prevState => ({ ...prevState, isLoader: false }));
   }, [value]);
+
+  function handleElementToggle() {
+    return value.isLoader ? <Loader /> : <Weather />
+  }
 
   return (
     <PageSafe>
@@ -61,8 +66,7 @@ export default function Page(props: PageProps) {
         <Button onPress={handleFetch}>
           <TextButton>Search</TextButton>
         </Button>
-
-        {value.isLoader ? <Loader /> : <Weather />}
+        {handleElementToggle()}
       </PageContainer>
     </PageSafe>
   );
